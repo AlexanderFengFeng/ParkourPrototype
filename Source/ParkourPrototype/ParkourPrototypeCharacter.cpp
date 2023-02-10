@@ -148,6 +148,8 @@ void AParkourPrototypeCharacter::ForwardTrace()
 	FVector Start = GetActorLocation() + GetActorForwardVector();
 	FVector End = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset;
 	FHitResult HitResult;
+	DrawDebugCylinder(GetWorld(), Start, End, 20.f, 8, FColor::Green);
+	if (IsHanging) return;
 
 	bool SweepResult = GetWorld()->SweepSingleByChannel(
 		HitResult,
@@ -156,10 +158,17 @@ void AParkourPrototypeCharacter::ForwardTrace()
 		FQuat::Identity,
 		ECC_Visibility,
 		FCollisionShape::MakeSphere(20.f));
-	DrawDebugCylinder(GetWorld(), Start, End, 20.f, 8, FColor::Green);
+
 	if (SweepResult)
 	{
-
+		IsWallAvailableToHang = true;
+		WallLocation = HitResult.Location;
+		WallNormal = HitResult.Normal;
+		DrawDebugSphere(GetWorld(), WallLocation, 32.f, 16.f, FColor::Red, false);
+	}
+	else
+	{
+		IsWallAvailableToHang = false;
 	}
 }
 
@@ -168,8 +177,16 @@ void AParkourPrototypeCharacter::HeightTrace()
 	FVector Start = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * 150.f;
 	FVector End = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset;
 
-	FHitResult HitResult;
+	DrawDebugCylinder(GetWorld(), Start, End, 20.f, 8, FColor::Red);
 
+	FVector PelvisLocation = GetMesh()->GetSocketLocation(TEXT("pelvisSocket"));
+	FVector ValidStart = PelvisLocation + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * 100.f;
+	FVector ValidEnd = PelvisLocation + GetActorForwardVector() * ClimbingFrontOffset;
+	DrawDebugCylinder(GetWorld(), ValidStart, ValidEnd, 20.f, 8, FColor::Blue);
+
+	if (IsHanging) return;
+
+	FHitResult HitResult;
 	bool SweepResult = GetWorld()->SweepSingleByChannel(
 		HitResult,
 		Start,
@@ -177,17 +194,13 @@ void AParkourPrototypeCharacter::HeightTrace()
 		FQuat::Identity,
 		ECC_Visibility,
 		FCollisionShape::MakeSphere(20.f));
-	DrawDebugCylinder(GetWorld(), Start, End, 20.f, 8, FColor::Red);
 
-	FVector PelvisLocation = GetMesh()->GetSocketLocation(TEXT("pelvisSocket"));
-	FVector ValidStart = PelvisLocation + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * 50.f;
-	FVector ValidEnd = PelvisLocation + GetActorForwardVector() * ClimbingFrontOffset;
-	DrawDebugCylinder(GetWorld(), ValidStart, ValidEnd, 20.f, 8, FColor::Blue);
-
+	// TODO: Address issue where we can walk into a hang.
 	if (SweepResult)
 	{
-		FVector HitLocation = HitResult.Location;
-		if (abs(PelvisLocation.Z - HitLocation.Z) <= 50.f)
+    	DrawDebugSphere(GetWorld(), HeightLocation, 32.f, 16.f, FColor::Magenta, false);
+		HeightLocation = HitResult.Location;
+		if (abs(PelvisLocation.Z - HeightLocation.Z) <= 100.f)
 		{
 			IsGrabbingLedge = true;
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);

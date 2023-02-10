@@ -64,11 +64,18 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 private:
-	float ClimbingFrontOffset = 50.f;
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* HangingAnimMontage;
 
+	float ClimbingFrontOffset = 50.f;
 
 	void ForwardTrace();
 	void HeightTrace();
+
 	bool IsHanging = false;
+	bool IsWallAvailableToHang = false;
+	FVector WallNormal;
+	FVector WallLocation;
+	FVector HeightLocation;
 };
 
