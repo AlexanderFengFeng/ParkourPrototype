@@ -104,6 +104,8 @@ void AParkourPrototypeCharacter::LookUpAtRate(float Rate)
 
 void AParkourPrototypeCharacter::MoveForward(float Value)
 {
+	if (IsGrabbingLedge) return;
+
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
 		// find out which way is forward
@@ -118,6 +120,8 @@ void AParkourPrototypeCharacter::MoveForward(float Value)
 
 void AParkourPrototypeCharacter::MoveRight(float Value)
 {
+	if (IsGrabbingLedge) return;
+
 	if ( (Controller != nullptr) && (Value != 0.0f) )
 	{
 		// find out which way is right
@@ -136,6 +140,10 @@ void AParkourPrototypeCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	ForwardTrace();
 	HeightTrace();
+	if (!IsGrabbingLedge)
+	{
+		//GetCharacterMovement()->SetMovementMode(EMovementMode::);
+	}
 }
 
 
@@ -155,7 +163,7 @@ void AParkourPrototypeCharacter::ForwardTrace()
 	DrawDebugCylinder(GetWorld(), Start, End, 20.f, 8, FColor::Green);
 	if (SweepResult)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Forward"));
+
 	}
 }
 
@@ -163,6 +171,7 @@ void AParkourPrototypeCharacter::HeightTrace()
 {
 	FVector Start = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * 150.f;
 	FVector End = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset;
+
 	FHitResult HitResult;
 
 	bool SweepResult = GetWorld()->SweepSingleByChannel(
@@ -173,8 +182,20 @@ void AParkourPrototypeCharacter::HeightTrace()
 		ECC_Visibility,
 		FCollisionShape::MakeSphere(20.f));
 	DrawDebugCylinder(GetWorld(), Start, End, 20.f, 8, FColor::Red);
+
+	FVector PelvisLocation = GetMesh()->GetSocketLocation(TEXT("pelvisSocket"));
+	FVector ValidStart = PelvisLocation + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * 50.f;
+	FVector ValidEnd = PelvisLocation + GetActorForwardVector() * ClimbingFrontOffset;
+	DrawDebugCylinder(GetWorld(), ValidStart, ValidEnd, 20.f, 8, FColor::Blue);
+
 	if (SweepResult)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Height"));
+		FVector HitLocation = HitResult.Location;
+		if (abs(PelvisLocation.Z - HitLocation.Z) <= 50.f)
+		{
+			IsGrabbingLedge = true;
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+			GetCharacterMovement()->StopMovementImmediately();
+		}
 	}
 }
