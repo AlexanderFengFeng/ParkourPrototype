@@ -104,7 +104,7 @@ void AParkourPrototypeCharacter::LookUpAtRate(float Rate)
 
 void AParkourPrototypeCharacter::MoveForward(float Value)
 {
-	if (IsGrabbingLedge) return;
+	if (IsHanging) return;
 
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
@@ -120,7 +120,7 @@ void AParkourPrototypeCharacter::MoveForward(float Value)
 
 void AParkourPrototypeCharacter::MoveRight(float Value)
 {
-	if (IsGrabbingLedge) return;
+	if (IsHanging) return;
 
 	if ( (Controller != nullptr) && (Value != 0.0f) )
 	{
@@ -140,10 +140,6 @@ void AParkourPrototypeCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	ForwardTrace();
 	HeightTrace();
-	if (!IsGrabbingLedge)
-	{
-		//GetCharacterMovement()->SetMovementMode(EMovementMode::);
-	}
 }
 
 

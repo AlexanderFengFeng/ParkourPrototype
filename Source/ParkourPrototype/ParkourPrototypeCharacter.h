@@ -66,9 +66,9 @@ public:
 private:
 	float ClimbingFrontOffset = 50.f;
 
-	bool IsGrabbingLedge = false;
 
 	void ForwardTrace();
 	void HeightTrace();
+	bool IsHanging = false;
 };
 
