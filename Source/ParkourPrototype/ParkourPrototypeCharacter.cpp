@@ -202,9 +202,41 @@ void AParkourPrototypeCharacter::HeightTrace()
 		HeightLocation = HitResult.Location;
 		if (abs(PelvisLocation.Z - HeightLocation.Z) <= 100.f)
 		{
-			IsGrabbingLedge = true;
-			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-			GetCharacterMovement()->StopMovementImmediately();
+			Hang();
 		}
+	}
+}
+
+void AParkourPrototypeCharacter::Hang()
+{
+	IsHanging = true;
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	GetCharacterMovement()->StopMovementImmediately();
+	if (HangingAnimMontage != nullptr)
+	{
+		PlayAnimMontage(HangingAnimMontage, 0.f);
+		GetMesh()->GetAnimInstance()->Montage_Pause();
+	}
+
+	if (IsWallAvailableToHang)
+	{
+
+		FVector WallOffset = WallLocation + WallNormal * 10.f; // Position to place character against wall.
+		float DestinationZ = HeightLocation.Z - 94.f; // Capsule half height.
+
+		FVector TargetLocation = FVector(WallOffset.X, WallOffset.Y, DestinationZ);
+		FRotator TargetRotation = (WallNormal * -1.f).Rotation();
+		FLatentActionInfo LatentAction;
+		LatentAction.CallbackTarget = this;
+		UKismetSystemLibrary::MoveComponentTo(
+			GetCapsuleComponent(),
+			TargetLocation,
+			TargetRotation,
+			true,
+			true,
+			0.2f,
+			false,
+			EMoveComponentAction::Move,
+			LatentAction);
 	}
 }

@@ -74,8 +74,11 @@ private:
 
 	bool IsHanging = false;
 	bool IsWallAvailableToHang = false;
+
 	FVector WallNormal;
 	FVector WallLocation;
 	FVector HeightLocation;
+
+	void Hang();
 };
 
