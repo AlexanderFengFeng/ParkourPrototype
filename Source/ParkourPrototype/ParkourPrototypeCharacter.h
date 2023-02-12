@@ -87,5 +87,6 @@ private:
 	FVector HeightLocation;
 
 	void Hang();
+	void DropDown();
 };
 

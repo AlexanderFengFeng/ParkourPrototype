@@ -243,3 +243,13 @@ void AParkourPrototypeCharacter::Hang()
 			LatentAction);
 	}
 }
+void AParkourPrototypeCharacter::DropDown()
+{
+	if (IsHanging)
+	{
+		IsHanging = false;
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
+		StopAnimMontage(HangingAnimMontage);
+	}
+}
+
