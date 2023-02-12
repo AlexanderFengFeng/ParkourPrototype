@@ -210,23 +210,25 @@ void AParkourPrototypeCharacter::HeightTrace()
 
 void AParkourPrototypeCharacter::Hang()
 {
-	IsHanging = true;
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-	GetCharacterMovement()->StopMovementImmediately();
-	if (HangingAnimMontage != nullptr)
-	{
-		PlayAnimMontage(HangingAnimMontage, 0.f);
-		GetMesh()->GetAnimInstance()->Montage_Pause();
-	}
-
 	if (IsWallAvailableToHang)
 	{
+	    IsHanging = true;
+	    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	    GetCharacterMovement()->StopMovementImmediately();
+	    if (HangingAnimMontage != nullptr)
+	    {
+		    PlayAnimMontage(HangingAnimMontage, 0.f);
+		    GetMesh()->GetAnimInstance()->Montage_Pause();
+	    }
 
-		FVector WallOffset = WallLocation + WallNormal * 10.f; // Position to place character against wall.
+		FVector WallOffset = WallLocation + WallNormal * 24.f; // Position to place character against wall.
 		float DestinationZ = HeightLocation.Z - 94.f; // Capsule half height.
 
 		FVector TargetLocation = FVector(WallOffset.X, WallOffset.Y, DestinationZ);
 		FRotator TargetRotation = (WallNormal * -1.f).Rotation();
+		TargetRotation.Pitch = 0.f;
+		TargetRotation.Roll = 0.f;
+
 		FLatentActionInfo LatentAction;
 		LatentAction.CallbackTarget = this;
 		UKismetSystemLibrary::MoveComponentTo(
