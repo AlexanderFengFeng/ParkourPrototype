@@ -145,10 +145,11 @@ void AParkourPrototypeCharacter::Tick(float DeltaSeconds)
 
 void AParkourPrototypeCharacter::ForwardTrace()
 {
-	FVector Start = GetActorLocation() + GetActorForwardVector();
-	FVector End = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset;
+	FVector Start = GetActorLocation() + GetActorForwardVector() + GetActorUpVector() * ClimbingFrontOffset;
+	FVector End = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * ChestVerticalOffset;
+
 	FHitResult HitResult;
-	DrawDebugCylinder(GetWorld(), Start, End, 20.f, 8, FColor::Green);
+	DrawDebugCylinder(GetWorld(), Start, End, 1.f, 8, FColor::Green);
 	if (IsHanging) return;
 
 	bool SweepResult = GetWorld()->SweepSingleByChannel(
@@ -157,14 +158,14 @@ void AParkourPrototypeCharacter::ForwardTrace()
 		End,
 		FQuat::Identity,
 		ECC_Visibility,
-		FCollisionShape::MakeSphere(20.f));
+		FCollisionShape::MakeSphere(1.f));
 
 	if (SweepResult)
 	{
 		IsWallAvailableToHang = true;
 		WallLocation = HitResult.Location;
 		WallNormal = HitResult.Normal;
-		DrawDebugSphere(GetWorld(), WallLocation, 32.f, 16.f, FColor::Red, false);
+		DrawDebugSphere(GetWorld(), WallLocation, 32.f, 16.f, FColor::Red, false, 3.f);
 	}
 	else
 	{
@@ -174,17 +175,17 @@ void AParkourPrototypeCharacter::ForwardTrace()
 
 void AParkourPrototypeCharacter::HeightTrace()
 {
-	FVector Start = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * 150.f;
-	FVector End = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset;
+	FVector Start = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * VerticleHeightStart;
+	FVector End = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * ChestVerticalOffset;
 
 	DrawDebugCylinder(GetWorld(), Start, End, 20.f, 8, FColor::Red);
 
 	FVector PelvisLocation = GetMesh()->GetSocketLocation(TEXT("pelvisSocket"));
-	FVector ValidStart = PelvisLocation + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * 100.f;
-	FVector ValidEnd = PelvisLocation + GetActorForwardVector() * ClimbingFrontOffset;
+	FVector ValidStart = PelvisLocation + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * VerticalAcceptanceHeight;
+	FVector ValidEnd = PelvisLocation + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * ChestVerticalOffset;
 	DrawDebugCylinder(GetWorld(), ValidStart, ValidEnd, 20.f, 8, FColor::Blue);
 
-	if (IsHanging) return;
+	if (IsHanging || !IsWallAvailableToHang) return;
 
 	FHitResult HitResult;
 	bool SweepResult = GetWorld()->SweepSingleByChannel(
@@ -193,14 +194,14 @@ void AParkourPrototypeCharacter::HeightTrace()
 		End,
 		FQuat::Identity,
 		ECC_Visibility,
-		FCollisionShape::MakeSphere(20.f));
+		FCollisionShape::MakeSphere(16.f));
 
 	// TODO: Address issue where we can walk into a hang.
 	if (SweepResult)
 	{
-    	DrawDebugSphere(GetWorld(), HeightLocation, 32.f, 16.f, FColor::Magenta, false);
 		HeightLocation = HitResult.Location;
-		if (abs(PelvisLocation.Z - HeightLocation.Z) <= 100.f)
+    	DrawDebugSphere(GetWorld(), HeightLocation, 32.f, 16.f, FColor::Magenta, false, 3.f);
+		if (abs(PelvisLocation.Z - HeightLocation.Z) <= VerticalAcceptanceHeight)
 		{
 			Hang();
 		}

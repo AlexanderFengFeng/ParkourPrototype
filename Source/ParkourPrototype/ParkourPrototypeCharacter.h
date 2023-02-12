@@ -67,7 +67,14 @@ private:
 	UPROPERTY(EditAnywhere)
 	class UAnimMontage* HangingAnimMontage;
 
+	UPROPERTY(EditAnywhere)
+	float ChestVerticalOffset = 50.f;
+	UPROPERTY(EditAnywhere)
 	float ClimbingFrontOffset = 50.f;
+	UPROPERTY(EditAnywhere)
+	float VerticleHeightStart = 150.f;
+	UPROPERTY(EditAnywhere)
+	float VerticalAcceptanceHeight = 100.f;
 
 	void ForwardTrace();
 	void HeightTrace();
