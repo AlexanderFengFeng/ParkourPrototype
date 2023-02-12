@@ -63,6 +63,7 @@ void AParkourPrototypeCharacter::SetupPlayerInputComponent(class UInputComponent
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("DropDown", IE_Pressed, this, &AParkourPrototypeCharacter::DropDown);
 
 	PlayerInputComponent->BindAxis("Move Forward / Backward", this, &AParkourPrototypeCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("Move Right / Left", this, &AParkourPrototypeCharacter::MoveRight);
