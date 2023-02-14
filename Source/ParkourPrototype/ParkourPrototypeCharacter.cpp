@@ -143,6 +143,12 @@ void AParkourPrototypeCharacter::Tick(float DeltaSeconds)
 	HeightTrace();
 }
 
+void AParkourPrototypeCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	GetMesh()->GetAnimInstance()->OnPlayMontageNotifyBegin.AddDynamic(this, &AParkourPrototypeCharacter::ChangeSettingsAfterFinishingClimbUp);
+}
+
 
 void AParkourPrototypeCharacter::ForwardTrace()
 {
@@ -244,6 +250,16 @@ void AParkourPrototypeCharacter::Hang()
 			LatentAction);
 	}
 }
+
+void AParkourPrototypeCharacter::ClimbUp()
+{
+    if (IsHanging && !IsClimbingUp)
+    {
+		IsClimbingUp = true;
+		PlayAnimMontage(HangingAnimMontage, 1.f);
+    }
+}
+
 void AParkourPrototypeCharacter::DropDown()
 {
 	if (IsHanging)
@@ -251,6 +267,43 @@ void AParkourPrototypeCharacter::DropDown()
 		IsHanging = false;
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Falling);
 		StopAnimMontage(HangingAnimMontage);
+	}
+}
+
+void AParkourPrototypeCharacter::ChangeSettingsAfterFinishingClimbUp(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload)
+{
+	if (NotifyName == TEXT("FinishClimbing"))
+	{
+	    IsHanging = false;
+	    IsClimbingUp = false;
+	    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+		FVector Start = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * VerticleHeightStart;
+		FVector End = GetActorLocation() + GetActorForwardVector() * ClimbingFrontOffset + GetActorUpVector() * ChestVerticalOffset;
+		FHitResult HitResult;
+		bool SweepResult = GetWorld()->SweepSingleByChannel(
+			HitResult,
+			Start,
+			End,
+			FQuat::Identity,
+			ECC_Visibility,
+			FCollisionShape::MakeSphere(16.f));
+		if (!SweepResult)
+		{
+		    FVector TargetLocation = GetActorLocation() + GetActorForwardVector() * 50.f;
+	        FLatentActionInfo LatentAction;
+	        LatentAction.CallbackTarget = this;
+		    UKismetSystemLibrary::MoveComponentTo(
+			    GetCapsuleComponent(),
+			    TargetLocation,
+                GetActorRotation(),
+		        true,
+		        true,
+		        0.2f,
+		        false,
+		        EMoveComponentAction::Move,
+		        LatentAction);
+		}
 	}
 }
 

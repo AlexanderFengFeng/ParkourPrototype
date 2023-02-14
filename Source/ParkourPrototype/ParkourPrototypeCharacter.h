@@ -57,6 +57,8 @@ protected:
 	// End of APawn interface
 	virtual void Tick(float DeltaSeconds) override;
 
+	virtual void BeginPlay() override;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -80,6 +82,7 @@ private:
 	void HeightTrace();
 
 	bool IsHanging = false;
+	bool IsClimbingUp = false;
 	bool IsWallAvailableToHang = false;
 
 	FVector WallNormal;
@@ -87,6 +90,10 @@ private:
 	FVector HeightLocation;
 
 	void Hang();
+	void ClimbUp();
 	void DropDown();
+
+	UFUNCTION()
+	void ChangeSettingsAfterFinishingClimbUp(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointNotifyPayload);
 };
 
